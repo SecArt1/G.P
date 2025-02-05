@@ -3,6 +3,8 @@ import 'package:gp/logInPage.dart';
 import 'package:gp/register.dart';
 import 'package:gp/stillStart.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'dart:math' as math;
+import 'dart:async';
 
 class StartScreen extends StatefulWidget {
   @override
@@ -10,18 +12,14 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
-  DraggableScrollableController _controller = DraggableScrollableController();
-  var activeScreen = 'Home Page';
-
-  void switchScreen() {
-    setState(() {
-      activeScreen = 'questions-screen';
-    });
-  }
+  late DraggableScrollableController _controller;
+  bool _showLogoAndText = false;
+  bool _showHeartbeat = true; // New state variable
 
   @override
   void initState() {
     super.initState();
+    _controller = DraggableScrollableController();
     _controller.addListener(_onSwipe);
   }
 
@@ -34,15 +32,11 @@ class _StartScreenState extends State<StartScreen> {
 
   void _onSwipe() {
     final size = _controller.size;
-    // Perform your action based on the size of the sheet
     if (size > 0.1) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
-      print("Sheet swiped up, size: $size");
-    } else {
-      print("Sheet swiped down, size: $size");
     }
   }
 
@@ -52,34 +46,55 @@ class _StartScreenState extends State<StartScreen> {
       backgroundColor: const Color(0xff0383c2),
       body: Stack(
         children: [
-          SizedBox(
-            height: 500,
+          Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center, // Add this
               children: [
-                Center(
-                  // Wrap Image with Center
-                  child: Image.asset('assets/Logo.png', width: 300),
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  // Wrap AnimatedTextKit with Center
-                  child: AnimatedTextKit(
-                    animatedTexts: [
-                      TypewriterAnimatedText(
-                        'Strive for Excellence',
-                        textStyle: const TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        speed: const Duration(milliseconds: 200),
-                      ),
-                    ],
-                    totalRepeatCount: 1,
+                // Logo with delayed appearance
+                if (_showLogoAndText) ...[
+                  AnimatedOpacity(
+                    opacity: 1.0,
+                    duration: const Duration(milliseconds: 500),
+                    child: Center(
+                      child: Image.asset('assets/Logo.png', width: 300),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                ],
+                if (_showHeartbeat) // Conditional rendering for heartbeat
+                  Center(
+                    child: HeartbeatAnimation(
+                      onComplete: () {
+                        setState(() {
+                          _showLogoAndText = true;
+                          _showHeartbeat = false; // Hide heartbeat
+                        });
+                      },
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                // Text with delayed appearance
+                if (_showLogoAndText)
+                  AnimatedOpacity(
+                    opacity: 1.0,
+                    duration: const Duration(milliseconds: 500),
+                    child: Center(
+                      child: AnimatedTextKit(
+                        animatedTexts: [
+                          TypewriterAnimatedText(
+                            'Your Health, Your Data,\n Your Control',
+                            textStyle: const TextStyle(
+                              fontSize: 22.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            speed: const Duration(milliseconds: 200),
+                          ),
+                        ],
+                        totalRepeatCount: 1,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -118,6 +133,172 @@ class _StartScreenState extends State<StartScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class HeartbeatPainter extends CustomPainter {
+  final double value;
+
+  HeartbeatPainter(this.value);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+
+    // Starting point
+    path.moveTo(0, size.height * 0.5);
+
+    // P wave (small bump)
+    path.lineTo(size.width * 0.1, size.height * 0.5);
+    path.quadraticBezierTo(size.width * 0.15, size.height * 0.4,
+        size.width * 0.2, size.height * 0.5);
+
+    // PR segment (flat)
+    path.lineTo(size.width * 0.25, size.height * 0.5);
+
+    // QRS complex
+    path.lineTo(size.width * 0.3, size.height * 0.6); // Q wave
+    path.lineTo(size.width * 0.35, size.height * 0.1); // R wave peak
+    path.lineTo(size.width * 0.4, size.height * 0.7); // S wave
+
+    // ST segment
+    path.lineTo(size.width * 0.45, size.height * 0.5);
+
+    // T wave
+    path.quadraticBezierTo(size.width * 0.5, size.height * 0.3,
+        size.width * 0.55, size.height * 0.5);
+
+    // Continue baseline
+    path.lineTo(size.width, size.height * 0.5);
+
+    final animatedPath = Path();
+    final pathMetric = path.computeMetrics().first;
+    animatedPath.addPath(
+      pathMetric.extractPath(0, pathMetric.length * value),
+      Offset.zero,
+    );
+
+    canvas.drawPath(animatedPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(HeartbeatPainter oldDelegate) => true;
+}
+
+class HeartbeatAnimation extends StatefulWidget {
+  final VoidCallback? onComplete;
+
+  const HeartbeatAnimation({
+    Key? key,
+    this.onComplete,
+  }) : super(key: key);
+
+  @override
+  _HeartbeatAnimationState createState() => _HeartbeatAnimationState();
+}
+
+class _HeartbeatAnimationState extends State<HeartbeatAnimation>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  bool _completed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(count: 2); // Show exactly 2 intervals
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _completed = true;
+        });
+        // Notify parent to show logo and text
+        if (widget.onComplete != null) {
+          widget.onComplete!();
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return SizedBox(
+          width: screenWidth,
+          height: 60, // Increased height for better visibility
+          child: CustomPaint(
+            painter: HeartbeatPainter(_controller.value),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class LogoAnimation extends StatefulWidget {
+  const LogoAnimation({Key? key}) : super(key: key);
+
+  @override
+  _LogoAnimationState createState() => _LogoAnimationState();
+}
+
+class _LogoAnimationState extends State<LogoAnimation>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: Image.asset('assets/Logo.png', width: 300),
+        );
+      },
     );
   }
 }
