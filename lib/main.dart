@@ -8,6 +8,7 @@ import 'package:bio_track/LandingPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bio_track/logInPage.dart';
 import 'package:bio_track/register.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Add this global variable
 bool ignoreAuthChanges = false;
@@ -18,8 +19,27 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Listen for auth state changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        // Clear any cached data when a user signs in
+        // This ensures fresh data is loaded
+        FirebaseFirestore.instance.clearPersistence();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

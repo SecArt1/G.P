@@ -2,181 +2,135 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   final String uid;
-  final String fullName;
   final String email;
-  final Timestamp createdAt;
-
-  // Basic user info
+  final String? fullName;
   final String? phoneNumber;
+  final String? address;
   final DateTime? dateOfBirth;
   final String? gender;
-  final String? photoUrl;
-  final String? address;
-
-  // Health metrics
-  final Map<String, dynamic>?
-      healthMetrics; // For storing latest health measurements
-  final List<Map<String, dynamic>>?
-      healthHistory; // For tracking changes over time
-
-  // Medical information
   final String? bloodType;
   final List<String>? allergies;
   final List<String>? medications;
   final List<String>? medicalConditions;
   final Map<String, dynamic>? emergencyContact;
-
-  // Fitness goals and tracking
-  final Map<String, dynamic>? fitnessGoals;
-  final Map<String, dynamic>? activityTracking;
+  final Map<String, dynamic>? healthMetrics;
+  final DateTime? lastTestDate;
+  final List<Map<String, dynamic>>? healthHistory;
 
   UserModel({
     required this.uid,
-    required this.fullName,
     required this.email,
-    required this.createdAt,
+    this.fullName,
     this.phoneNumber,
+    this.address,
     this.dateOfBirth,
     this.gender,
-    this.photoUrl,
-    this.address,
-    this.healthMetrics,
-    this.healthHistory,
     this.bloodType,
     this.allergies,
     this.medications,
     this.medicalConditions,
     this.emergencyContact,
-    this.fitnessGoals,
-    this.activityTracking,
+    this.healthMetrics,
+    this.lastTestDate,
+    this.healthHistory,
   });
 
-  // Create from Firestore document
-  factory UserModel.fromDocument(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>? ?? {};
-
-    // Handle dateOfBirth which could be either a String or a Timestamp
-    DateTime? parsedDateOfBirth;
-    if (data['dateOfBirth'] != null) {
-      if (data['dateOfBirth'] is Timestamp) {
-        parsedDateOfBirth = (data['dateOfBirth'] as Timestamp).toDate();
-      } else if (data['dateOfBirth'] is String) {
-        // Parse the string date format
-        try {
-          parsedDateOfBirth = DateTime.parse(data['dateOfBirth']);
-        } catch (e) {
-          print("Error parsing dateOfBirth: $e");
-        }
-      }
-    }
-
+  // Factory constructor to create a UserModel from a JSON object
+  factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      uid: doc.id,
-      fullName: data['fullName'] ?? 'User',
-      email: data['email'] ?? '',
-      createdAt:
-          data['createdAt'] is Timestamp ? data['createdAt'] : Timestamp.now(),
-
-      // Use the parsed date
-      dateOfBirth: parsedDateOfBirth,
-
-      // Rest of your model fields...
-      phoneNumber: data['phoneNumber'],
-      gender: data['gender'],
-      photoUrl: data['photoUrl'],
-      address: data['address'],
-
-      // Health metrics
-      healthMetrics: data['healthMetrics'],
-      healthHistory: data['healthHistory'] != null
-          ? List<Map<String, dynamic>>.from(data['healthHistory'])
+      uid: json['uid'] as String,
+      email: json['email'] as String,
+      fullName: json['fullName'] as String?,
+      phoneNumber: json['phoneNumber'] as String?,
+      address: json['address'] as String?,
+      dateOfBirth: json['dateOfBirth'] != null
+          ? (json['dateOfBirth'] is Timestamp
+              ? (json['dateOfBirth'] as Timestamp).toDate()
+              : (json['dateOfBirth'] is String
+                  ? DateTime.parse(json['dateOfBirth'])
+                  : null))
           : null,
-
-      // Medical information
-      bloodType: data['bloodType'],
-      allergies: data['allergies'] != null
-          ? List<String>.from(data['allergies'])
+      gender: json['gender'] as String?,
+      bloodType: json['bloodType'] as String?,
+      allergies: json['allergies'] != null
+          ? List<String>.from(json['allergies'])
           : null,
-      medications: data['medications'] != null
-          ? List<String>.from(data['medications'])
+      medications: json['medications'] != null
+          ? List<String>.from(json['medications'])
           : null,
-      medicalConditions: data['medicalConditions'] != null
-          ? List<String>.from(data['medicalConditions'])
+      medicalConditions: json['medicalConditions'] != null
+          ? List<String>.from(json['medicalConditions'])
           : null,
-      emergencyContact: data['emergencyContact'],
-
-      // Fitness goals and tracking
-      fitnessGoals: data['fitnessGoals'],
-      activityTracking: data['activityTracking'],
+      emergencyContact: json['emergencyContact'] as Map<String, dynamic>?,
+      healthMetrics: json['healthMetrics'] as Map<String, dynamic>?,
+      lastTestDate: json['lastTestDate'] != null
+          ? (json['lastTestDate'] is Timestamp
+              ? (json['lastTestDate'] as Timestamp).toDate()
+              : DateTime.parse(json['lastTestDate'].toString()))
+          : null,
+      healthHistory: json['healthHistory'] != null
+          ? List<Map<String, dynamic>>.from(json['healthHistory'])
+          : null,
     );
   }
 
-  // Convert to Map for Firestore
-  Map<String, dynamic> toMap() {
+  // Method to convert UserModel to a JSON object
+  Map<String, dynamic> toJson() {
     return {
-      'fullName': fullName,
+      'uid': uid,
       'email': email,
-      'createdAt': createdAt,
-
-      // Only include non-null fields
-      if (phoneNumber != null) 'phoneNumber': phoneNumber,
-      if (dateOfBirth != null) 'dateOfBirth': Timestamp.fromDate(dateOfBirth!),
-      if (gender != null) 'gender': gender,
-      if (photoUrl != null) 'photoUrl': photoUrl,
-      if (address != null) 'address': address,
-
-      if (healthMetrics != null) 'healthMetrics': healthMetrics,
-      if (healthHistory != null) 'healthHistory': healthHistory,
-
-      if (bloodType != null) 'bloodType': bloodType,
-      if (allergies != null) 'allergies': allergies,
-      if (medications != null) 'medications': medications,
-      if (medicalConditions != null) 'medicalConditions': medicalConditions,
-      if (emergencyContact != null) 'emergencyContact': emergencyContact,
-
-      if (fitnessGoals != null) 'fitnessGoals': fitnessGoals,
-      if (activityTracking != null) 'activityTracking': activityTracking,
+      'fullName': fullName,
+      'phoneNumber': phoneNumber,
+      'address': address,
+      'dateOfBirth':
+          dateOfBirth != null ? Timestamp.fromDate(dateOfBirth!) : null,
+      'gender': gender,
+      'bloodType': bloodType,
+      'allergies': allergies,
+      'medications': medications,
+      'medicalConditions': medicalConditions,
+      'emergencyContact': emergencyContact,
+      'healthMetrics': healthMetrics,
+      'lastTestDate':
+          lastTestDate != null ? Timestamp.fromDate(lastTestDate!) : null,
+      'healthHistory': healthHistory,
     };
   }
 
-  // Create a copy with updated fields
+  // Create a copy of this UserModel with optional new values
   UserModel copyWith({
-    String? fullName,
+    String? uid,
     String? email,
+    String? fullName,
     String? phoneNumber,
+    String? address,
     DateTime? dateOfBirth,
     String? gender,
-    String? photoUrl,
-    String? address,
-    Map<String, dynamic>? healthMetrics,
-    List<Map<String, dynamic>>? healthHistory,
     String? bloodType,
     List<String>? allergies,
     List<String>? medications,
     List<String>? medicalConditions,
     Map<String, dynamic>? emergencyContact,
-    Map<String, dynamic>? fitnessGoals,
-    Map<String, dynamic>? activityTracking,
+    Map<String, dynamic>? healthMetrics,
+    DateTime? lastTestDate,
+    List<Map<String, dynamic>>? healthHistory,
   }) {
     return UserModel(
-      uid: this.uid,
-      fullName: fullName ?? this.fullName,
+      uid: uid ?? this.uid,
       email: email ?? this.email,
-      createdAt: this.createdAt,
+      fullName: fullName ?? this.fullName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      address: address ?? this.address,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       gender: gender ?? this.gender,
-      photoUrl: photoUrl ?? this.photoUrl,
-      address: address ?? this.address,
-      healthMetrics: healthMetrics ?? this.healthMetrics,
-      healthHistory: healthHistory ?? this.healthHistory,
       bloodType: bloodType ?? this.bloodType,
       allergies: allergies ?? this.allergies,
       medications: medications ?? this.medications,
       medicalConditions: medicalConditions ?? this.medicalConditions,
       emergencyContact: emergencyContact ?? this.emergencyContact,
-      fitnessGoals: fitnessGoals ?? this.fitnessGoals,
-      activityTracking: activityTracking ?? this.activityTracking,
+      healthMetrics: healthMetrics ?? this.healthMetrics,
+      lastTestDate: lastTestDate ?? this.lastTestDate,
+      healthHistory: healthHistory ?? this.healthHistory,
     );
   }
 }

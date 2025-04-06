@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bio_track/edit_profile.dart';
@@ -17,25 +17,33 @@ class _SummaryPageState extends State<SummaryPage>
   final List<String> _tabs = ['Dashboard', 'Details', 'History', 'Reports'];
 
   // Sample data for line chart
-  final List<FlSpot> _weightData = [
-    FlSpot(0, 96.5),
-    FlSpot(1, 95.8),
-    FlSpot(2, 94.2),
-    FlSpot(3, 95.0),
-    FlSpot(4, 93.7),
-    FlSpot(5, 92.6),
-    FlSpot(6, 91.8),
+  final List<ChartData> _weightData = [
+    ChartData('Mon', 96.5),
+    ChartData('Tue', 95.8),
+    ChartData('Wed', 94.2),
+    ChartData('Thu', 95.0),
+    ChartData('Fri', 93.7),
+    ChartData('Sat', 92.6),
+    ChartData('Sun', 91.8),
   ];
 
   // Sample data for heart rate chart
-  final List<FlSpot> _heartRateData = [
-    FlSpot(0, 78),
-    FlSpot(1, 82),
-    FlSpot(2, 75),
-    FlSpot(3, 79),
-    FlSpot(4, 81),
-    FlSpot(5, 77),
-    FlSpot(6, 74),
+  final List<ChartData> _heartRateData = [
+    ChartData('Mon', 78),
+    ChartData('Tue', 82),
+    ChartData('Wed', 75),
+    ChartData('Thu', 79),
+    ChartData('Fri', 81),
+    ChartData('Sat', 77),
+    ChartData('Sun', 74),
+  ];
+
+  // Monthly data for weight progress
+  final List<ChartData> _monthlyWeightData = [
+    ChartData('Jan', 100.8),
+    ChartData('Feb', 99.5),
+    ChartData('Mar', 98.2),
+    ChartData('Apr', 96.7),
   ];
 
   @override
@@ -419,105 +427,39 @@ class _SummaryPageState extends State<SummaryPage>
                               const SizedBox(height: 16),
                               SizedBox(
                                 height: 200,
-                                child: LineChart(
-                                  LineChartData(
-                                    gridData: FlGridData(show: false),
-                                    titlesData: FlTitlesData(
-                                      leftTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          getTitlesWidget: (value, meta) {
-                                            return Text(
-                                              value.toInt().toString(),
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                color: Color(0xFF68737D),
-                                              ),
-                                            );
-                                          },
-                                          reservedSize: 30,
-                                        ),
-                                      ),
-                                      bottomTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          getTitlesWidget: (value, meta) {
-                                            const style = TextStyle(
-                                              fontSize: 10,
-                                              color: Color(0xFF68737D),
-                                            );
-                                            String text;
-                                            switch (value.toInt()) {
-                                              case 0:
-                                                text = 'Mon';
-                                                break;
-                                              case 1:
-                                                text = 'Tue';
-                                                break;
-                                              case 2:
-                                                text = 'Wed';
-                                                break;
-                                              case 3:
-                                                text = 'Thu';
-                                                break;
-                                              case 4:
-                                                text = 'Fri';
-                                                break;
-                                              case 5:
-                                                text = 'Sat';
-                                                break;
-                                              case 6:
-                                                text = 'Sun';
-                                                break;
-                                              default:
-                                                text = '';
-                                            }
-                                            return Text(text, style: style);
-                                          },
-                                          reservedSize: 30,
-                                        ),
-                                      ),
-                                      rightTitles: AxisTitles(
-                                        sideTitles:
-                                            SideTitles(showTitles: false),
-                                      ),
-                                      topTitles: AxisTitles(
-                                        sideTitles:
-                                            SideTitles(showTitles: false),
-                                      ),
-                                    ),
-                                    borderData: FlBorderData(show: false),
-                                    minX: 0,
-                                    maxX: 6,
-                                    minY: 90,
-                                    maxY: 97,
-                                    lineBarsData: [
-                                      LineChartBarData(
-                                        spots: _weightData,
-                                        isCurved: true,
-                                        color: const Color(0xFF0383C2),
-                                        barWidth: 3,
-                                        isStrokeCapRound: true,
-                                        dotData: FlDotData(
-                                          show: true,
-                                          getDotPainter:
-                                              (spot, percent, barData, index) =>
-                                                  FlDotCirclePainter(
-                                            radius: 4,
-                                            color: Colors.white,
-                                            strokeWidth: 2,
-                                            strokeColor:
-                                                const Color(0xFF0383C2),
-                                          ),
-                                        ),
-                                        belowBarData: BarAreaData(
-                                          show: true,
-                                          color: const Color(0xFF0383C2)
-                                              .withOpacity(0.1),
-                                        ),
-                                      ),
-                                    ],
+                                child: SfCartesianChart(
+                                  primaryXAxis: CategoryAxis(
+                                    majorGridLines:
+                                        const MajorGridLines(width: 0),
                                   ),
+                                  primaryYAxis: NumericAxis(
+                                    minimum: 90,
+                                    maximum: 97,
+                                    axisLine: const AxisLine(width: 0),
+                                    majorTickLines:
+                                        const MajorTickLines(size: 0),
+                                  ),
+                                  plotAreaBorderWidth: 0,
+                                  series: <CartesianSeries>[
+                                    SplineSeries<ChartData, String>(
+                                      dataSource: _weightData,
+                                      xValueMapper: (ChartData data, _) =>
+                                          data.x,
+                                      yValueMapper: (ChartData data, _) =>
+                                          data.y,
+                                      color: const Color(0xFF0383C2),
+                                      markerSettings: const MarkerSettings(
+                                        isVisible: true,
+                                        borderWidth: 2,
+                                        borderColor: Color(0xFF0383C2),
+                                        color: Colors.white,
+                                      ),
+                                      splineType: SplineType.natural,
+                                      width: 3,
+                                    )
+                                  ],
+                                  tooltipBehavior:
+                                      TooltipBehavior(enable: true),
                                 ),
                               ),
                             ],
@@ -576,104 +518,39 @@ class _SummaryPageState extends State<SummaryPage>
                               const SizedBox(height: 16),
                               SizedBox(
                                 height: 200,
-                                child: LineChart(
-                                  LineChartData(
-                                    gridData: FlGridData(show: false),
-                                    titlesData: FlTitlesData(
-                                      leftTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          getTitlesWidget: (value, meta) {
-                                            return Text(
-                                              value.toInt().toString(),
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                color: Color(0xFF68737D),
-                                              ),
-                                            );
-                                          },
-                                          reservedSize: 30,
-                                        ),
-                                      ),
-                                      bottomTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          getTitlesWidget: (value, meta) {
-                                            const style = TextStyle(
-                                              fontSize: 10,
-                                              color: Color(0xFF68737D),
-                                            );
-                                            String text;
-                                            switch (value.toInt()) {
-                                              case 0:
-                                                text = 'Mon';
-                                                break;
-                                              case 1:
-                                                text = 'Tue';
-                                                break;
-                                              case 2:
-                                                text = 'Wed';
-                                                break;
-                                              case 3:
-                                                text = 'Thu';
-                                                break;
-                                              case 4:
-                                                text = 'Fri';
-                                                break;
-                                              case 5:
-                                                text = 'Sat';
-                                                break;
-                                              case 6:
-                                                text = 'Sun';
-                                                break;
-                                              default:
-                                                text = '';
-                                            }
-                                            return Text(text, style: style);
-                                          },
-                                          reservedSize: 30,
-                                        ),
-                                      ),
-                                      rightTitles: AxisTitles(
-                                        sideTitles:
-                                            SideTitles(showTitles: false),
-                                      ),
-                                      topTitles: AxisTitles(
-                                        sideTitles:
-                                            SideTitles(showTitles: false),
-                                      ),
-                                    ),
-                                    borderData: FlBorderData(show: false),
-                                    minX: 0,
-                                    maxX: 6,
-                                    minY: 70,
-                                    maxY: 85,
-                                    lineBarsData: [
-                                      LineChartBarData(
-                                        spots: _heartRateData,
-                                        isCurved: true,
-                                        color: Colors.redAccent,
-                                        barWidth: 3,
-                                        isStrokeCapRound: true,
-                                        dotData: FlDotData(
-                                          show: true,
-                                          getDotPainter:
-                                              (spot, percent, barData, index) =>
-                                                  FlDotCirclePainter(
-                                            radius: 4,
-                                            color: Colors.white,
-                                            strokeWidth: 2,
-                                            strokeColor: Colors.redAccent,
-                                          ),
-                                        ),
-                                        belowBarData: BarAreaData(
-                                          show: true,
-                                          color:
-                                              Colors.redAccent.withOpacity(0.1),
-                                        ),
-                                      ),
-                                    ],
+                                child: SfCartesianChart(
+                                  primaryXAxis: CategoryAxis(
+                                    majorGridLines:
+                                        const MajorGridLines(width: 0),
                                   ),
+                                  primaryYAxis: NumericAxis(
+                                    minimum: 70,
+                                    maximum: 85,
+                                    axisLine: const AxisLine(width: 0),
+                                    majorTickLines:
+                                        const MajorTickLines(size: 0),
+                                  ),
+                                  plotAreaBorderWidth: 0,
+                                  series: <CartesianSeries>[
+                                    SplineSeries<ChartData, String>(
+                                      dataSource: _heartRateData,
+                                      xValueMapper: (ChartData data, _) =>
+                                          data.x,
+                                      yValueMapper: (ChartData data, _) =>
+                                          data.y,
+                                      color: Colors.redAccent,
+                                      markerSettings: const MarkerSettings(
+                                        isVisible: true,
+                                        borderWidth: 2,
+                                        borderColor: Colors.redAccent,
+                                        color: Colors.white,
+                                      ),
+                                      splineType: SplineType.natural,
+                                      width: 3,
+                                    )
+                                  ],
+                                  tooltipBehavior:
+                                      TooltipBehavior(enable: true),
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -836,13 +713,683 @@ class _SummaryPageState extends State<SummaryPage>
                   ),
 
                   // Details Tab
-                  const Center(child: Text('Details Tab Content')),
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Detailed Metrics Section
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Body Composition Details',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF333333),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildDetailedMetricRow(
+                                  'Weight',
+                                  '96.7 kg',
+                                  'The mass of the body in kilograms.',
+                                  '60-80 kg',
+                                  Colors.redAccent),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Body Fat',
+                                  '16.8%',
+                                  'The percentage of total body mass that is fat.',
+                                  '10-20%',
+                                  Colors.green),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Muscle Mass',
+                                  '30.1 kg',
+                                  'The weight of muscle in the body.',
+                                  '35-45 kg',
+                                  Colors.amber),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'BMI',
+                                  '27.3',
+                                  'Body Mass Index - weight relative to height.',
+                                  '18.5-24.9',
+                                  Colors.redAccent),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Visceral Fat',
+                                  '9',
+                                  'Fat that surrounds the internal organs.',
+                                  '1-9',
+                                  Colors.green),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Vital Signs Details
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Vital Signs Details',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF333333),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildDetailedMetricRow(
+                                  'Blood Pressure',
+                                  '120/80 mmHg',
+                                  'Force of blood pushing against artery walls.',
+                                  '90/60 - 120/80 mmHg',
+                                  Colors.green),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Heart Rate',
+                                  '78 BPM',
+                                  'Number of heartbeats per minute.',
+                                  '60-100 BPM',
+                                  Colors.green),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Blood Sugar',
+                                  '120.1 mg/dl',
+                                  'Amount of glucose in the bloodstream.',
+                                  '70-140 mg/dl',
+                                  Colors.green),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Temperature',
+                                  '36.8 °C',
+                                  'Core body temperature.',
+                                  '36.1-37.2 °C',
+                                  Colors.green),
+                              const Divider(height: 24),
+                              _buildDetailedMetricRow(
+                                  'Oxygen Saturation',
+                                  '98%',
+                                  'Percentage of oxygen-saturated hemoglobin.',
+                                  '95-100%',
+                                  Colors.green),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Recommendations
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0383C2), Color(0xFF03A9F4)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.lightbulb_outline,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Personalized Recommendations',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              _buildRecommendationItem(
+                                'Reduce daily caloric intake by 300-500 calories',
+                                Icons.restaurant_outlined,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildRecommendationItem(
+                                'Increase strength training to 3 times per week',
+                                Icons.fitness_center_outlined,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildRecommendationItem(
+                                'Add 30 minutes of cardio exercise daily',
+                                Icons.directions_run_outlined,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildRecommendationItem(
+                                'Increase water intake to 2.5 liters daily',
+                                Icons.water_drop_outlined,
+                              ),
+                              const SizedBox(height: 16),
+                              Center(
+                                child: TextButton(
+                                  onPressed: () {},
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Get Detailed Plan',
+                                    style: TextStyle(
+                                      color: Color(0xFF0383C2),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                   // History Tab
-                  const Center(child: Text('History Tab Content')),
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Date Selection
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Time Period:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF333333),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color(0xFF0383C2).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Text(
+                                      'Last 3 Months',
+                                      style: TextStyle(
+                                        color: Color(0xFF0383C2),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.arrow_drop_down,
+                                      color: const Color(0xFF0383C2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Timeline of Test Results
+                        const Text(
+                          'Test History',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF333333),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        _buildTestHistoryItem(
+                          DateTime.now().subtract(const Duration(days: 7)),
+                          'Comprehensive Health Check',
+                          'Weight: 96.7 kg, Body Fat: 16.8%, BMI: 27.3',
+                          true,
+                        ),
+
+                        _buildTestHistoryItem(
+                          DateTime.now().subtract(const Duration(days: 37)),
+                          'Regular Health Check',
+                          'Weight: 98.2 kg, Body Fat: 17.3%, BMI: 27.8',
+                          false,
+                        ),
+
+                        _buildTestHistoryItem(
+                          DateTime.now().subtract(const Duration(days: 67)),
+                          'Comprehensive Health Check',
+                          'Weight: 99.5 kg, Body Fat: 18.2%, BMI: 28.2',
+                          false,
+                        ),
+
+                        _buildTestHistoryItem(
+                          DateTime.now().subtract(const Duration(days: 97)),
+                          'Regular Health Check',
+                          'Weight: 100.8 kg, Body Fat: 19.1%, BMI: 28.6',
+                          false,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Weight Progress Chart
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Weight Progress',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF333333),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(
+                                          Icons.trending_down,
+                                          size: 14,
+                                          color: Colors.green,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          '-4.1 kg',
+                                          style: TextStyle(
+                                            color: Colors.green,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                height: 200,
+                                child: SfCartesianChart(
+                                  primaryXAxis: CategoryAxis(
+                                    majorGridLines:
+                                        const MajorGridLines(width: 0),
+                                  ),
+                                  primaryYAxis: NumericAxis(
+                                    minimum: 95,
+                                    maximum: 101,
+                                    axisLine: const AxisLine(width: 0),
+                                    majorTickLines:
+                                        const MajorTickLines(size: 0),
+                                  ),
+                                  plotAreaBorderWidth: 0,
+                                  series: <CartesianSeries>[
+                                    SplineSeries<ChartData, String>(
+                                      dataSource: _monthlyWeightData,
+                                      xValueMapper: (ChartData data, _) =>
+                                          data.x,
+                                      yValueMapper: (ChartData data, _) =>
+                                          data.y,
+                                      color: const Color(0xFF0383C2),
+                                      markerSettings: const MarkerSettings(
+                                        isVisible: true,
+                                        borderWidth: 2,
+                                        borderColor: Color(0xFF0383C2),
+                                        color: Colors.white,
+                                      ),
+                                      splineType: SplineType.natural,
+                                      width: 3,
+                                    )
+                                  ],
+                                  tooltipBehavior:
+                                      TooltipBehavior(enable: true),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Compare Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.compare_arrows),
+                            label: const Text('Compare Test Results'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0383C2),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                   // Reports Tab
-                  const Center(child: Text('Reports Tab Content')),
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Latest Report
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0383C2), Color(0xFF03A9F4)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.description_outlined,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Latest Health Report',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Generated on Apr 6, 2025',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'This report includes your comprehensive health assessment and trends over the past 3 months.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: () {},
+                                    icon: const Icon(Icons.download),
+                                    label: const Text('Download'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: const Color(0xFF0383C2),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton.icon(
+                                    onPressed: () {},
+                                    icon: const Icon(Icons.share),
+                                    label: const Text('Share'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white24,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Available Reports
+                        const Text(
+                          'Available Reports',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF333333),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        _buildReportItem(
+                          'Comprehensive Health Report',
+                          'Apr 6, 2025',
+                          Icons.description_outlined,
+                          const Color(0xFF0383C2),
+                        ),
+
+                        _buildReportItem(
+                          'Monthly Progress Summary',
+                          'Mar 6, 2025',
+                          Icons.timeline_outlined,
+                          Colors.amber,
+                        ),
+
+                        _buildReportItem(
+                          'Body Composition Analysis',
+                          'Feb 6, 2025',
+                          Icons.analytics_outlined,
+                          Colors.green,
+                        ),
+
+                        _buildReportItem(
+                          'Annual Health Assessment',
+                          'Jan 1, 2025',
+                          Icons.event_note_outlined,
+                          Colors.purple,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Report Settings
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Report Settings',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF333333),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildSettingRow(
+                                'Automatic Monthly Reports',
+                                'Receive reports on the 1st of each month',
+                                true,
+                              ),
+                              const Divider(height: 24),
+                              _buildSettingRow(
+                                'Share with Healthcare Provider',
+                                'Automatically forward reports to your doctor',
+                                false,
+                              ),
+                              const Divider(height: 24),
+                              _buildSettingRow(
+                                'Email Notifications',
+                                'Get notified when new reports are ready',
+                                true,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Generate Custom Report
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.add),
+                            label: const Text('Generate Custom Report'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0383C2),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -993,4 +1540,301 @@ class _SummaryPageState extends State<SummaryPage>
       ),
     );
   }
+
+  // Helper method for the Details tab
+  Widget _buildDetailedMetricRow(String name, String value, String description,
+      String normalRange, Color statusColor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  normalRange,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Helper method for the recommendations section
+  Widget _buildRecommendationItem(String text, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 18,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Helper method for the History tab
+  Widget _buildTestHistoryItem(
+      DateTime date, String title, String summary, bool isLatest) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: isLatest
+            ? Border.all(color: const Color(0xFF0383C2), width: 2)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                DateFormat('MMM d, yyyy').format(date),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0383C2),
+                ),
+              ),
+              if (isLatest)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0383C2).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Latest',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0383C2),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF333333),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            summary,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.visibility_outlined, size: 16),
+                label: const Text('View'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF0383C2),
+                  padding: EdgeInsets.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method for the Reports tab
+  Widget _buildReportItem(
+      String title, String date, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+                Text(
+                  'Generated on $date',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.download_outlined),
+                color: Colors.grey[600],
+                iconSize: 20,
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.share_outlined),
+                color: Colors.grey[600],
+                iconSize: 20,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method for report settings
+  Widget _buildSettingRow(String title, String description, bool isEnabled) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF333333),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        Switch(
+          value: isEnabled,
+          onChanged: (value) {},
+          activeColor: const Color(0xFF0383C2),
+        ),
+      ],
+    );
+  }
+}
+
+class ChartData {
+  ChartData(this.x, this.y);
+  final String x;
+  final double y;
 }

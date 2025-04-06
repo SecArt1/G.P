@@ -10,6 +10,9 @@ class UserService {
   final CollectionReference _usersCollection =
       FirebaseFirestore.instance.collection('users');
 
+  // Cached user data
+  final Map<String, UserModel> _cachedUserData = {};
+
   // Create new user document with better debugging
   Future<void> createUser(User user, String displayName) async {
     try {
@@ -30,44 +33,56 @@ class UserService {
   }
 
   // Get current user data with better debugging
-  Future<UserModel?> getCurrentUser() async {
+  Future<UserModel> getCurrentUser({bool forceRefresh = false}) async {
+    // Get the current Firebase user
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    // Check if we have a logged-in user
+    if (firebaseUser == null) {
+      throw Exception('No user logged in');
+    }
+
+    // Clear any cached user data if force refresh is requested
+    if (forceRefresh) {
+      _cachedUserData.remove(firebaseUser.uid);
+    }
+
+    // Try to get user data from Firestore
     try {
-      final user = _auth.currentUser;
-      print("Current Firebase Auth user: ${user?.uid}");
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .get();
 
-      if (user == null) {
-        print("No authenticated user found");
-        return null;
+      if (userDoc.exists && userDoc.data() != null) {
+        // Create UserModel from Firestore data
+        final userData = userDoc.data()!;
+
+        // Store in cache for future use
+        final user = UserModel.fromJson({
+          'uid': firebaseUser.uid,
+          'email': firebaseUser.email,
+          ...userData,
+        });
+
+        _cachedUserData[firebaseUser.uid] = user;
+        return user;
+      } else {
+        // Return basic user if Firestore profile doesn't exist yet
+        return UserModel(
+          uid: firebaseUser.uid,
+          email: firebaseUser.email ?? '',
+          fullName: firebaseUser.displayName,
+        );
       }
-
-      print("Fetching Firestore document for user: ${user.uid}");
-      final docSnapshot =
-          await _firestore.collection('users').doc(user.uid).get();
-
-      if (!docSnapshot.exists) {
-        print("No Firestore document exists for user: ${user.uid}");
-
-        // Create a record if it doesn't exist
-        print("Creating a new user document");
-        await createUser(user, user.displayName ?? "New User");
-
-        // Try to get the document again
-        final newDocSnapshot =
-            await _firestore.collection('users').doc(user.uid).get();
-        if (!newDocSnapshot.exists) {
-          print("Still no document after creation attempt");
-          return null;
-        }
-
-        print("Document created successfully");
-        return UserModel.fromDocument(newDocSnapshot);
-      }
-
-      print("Found Firestore document. Data: ${docSnapshot.data()}");
-      return UserModel.fromDocument(docSnapshot);
     } catch (e) {
-      print("Error in getCurrentUser: $e");
-      return null;
+      print('Error fetching user data: $e');
+      // Return basic user on error
+      return UserModel(
+        uid: firebaseUser.uid,
+        email: firebaseUser.email ?? '',
+        fullName: firebaseUser.displayName,
+      );
     }
   }
 
@@ -155,7 +170,8 @@ class UserService {
   }
 
   // Update user profile with timestamp
-  Future<void> updateUserProfileWithTimestamp(Map<String, dynamic> profileData) async {
+  Future<void> updateUserProfileWithTimestamp(
+      Map<String, dynamic> profileData) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
